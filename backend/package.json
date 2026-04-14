@@ -1,0 +1,44 @@
+{
+  "name": "student-performance-analyzer-backend",
+  "version": "1.0.0",
+  "description": "Student Performance Analyzer Backend - Node.js + Express + Prisma",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "nodemon --experimental-vm-modules src/server.js",
+    "start": "node src/server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy",
+    "prisma:migrate:dev": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "seed": "node src/utils/seedUsers.js",
+    "build": "echo 'No build step required for backend'"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.10.0",
+    "axios": "^1.6.7",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "express-fileupload": "^1.5.2",
+    "express-rate-limit": "^7.2.0",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "node-cron": "^3.0.3",
+    "playwright": "^1.42.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0",
+    "winston": "^3.12.0",
+    "winston-daily-rotate-file": "^4.7.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0",
+    "prisma": "^5.10.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      String   @default("STUDENT")
+  studentId String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  student   Student? @relation(fields: [studentId], references: [id])
+
+  @@map("users")
+}
+
+model Student {
+  id                 String                @id @default(uuid())
+  rollNumber         String                @unique
+  name               String
+  email              String                @unique
+  leetcodeUsername   String                @unique
+  hackerrankUsername String                @unique
+  isActive           Boolean               @default(true)
+  weeklyGoal         Int                   @default(10)
+  hackathonCount     Int                   @default(0)
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  fetchLogs          FetchLog[]
+  hackathons         Hackathon[]
+  snapshots          PerformanceSnapshot[]
+  user               User?
+
+  @@index([name])
+  @@map("students")
+}
+
+model Hackathon {
+  id              String    @id @default(uuid())
+  studentId       String
+  eventName       String
+  organizer       String?
+  position        String    @default("PARTICIPANT")
+  date            DateTime
+  description     String?
+  proofUrl        String?
+  teamSize        Int       @default(1)
+  isVerified      Boolean   @default(false)
+  verifiedAt      DateTime?
+  verifiedBy      String?
+  rejectionReason String?
+  status          String    @default("PENDING")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  student         Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([status])
+  @@map("hackathons")
+}
+
+model PerformanceSnapshot {
+  id                    String   @id @default(uuid())
+  studentId             String
+  leetcodeTotalSolved   Int      @default(0)
+  leetcodeEasySolved    Int      @default(0)
+  leetcodeMediumSolved  Int      @default(0)
+  leetcodeHardSolved    Int      @default(0)
+  leetcodeContestRating Float?
+  leetcodeGlobalRank    Int?
+  leetcodeAttended      Int      @default(0)
+  hackerrankTotalSolved Int      @default(0)
+  hackerrankScore       Float    @default(0)
+  hackathonScore        Float    @default(0)
+  topTopics             String?
+  combinedScore         Float    @default(0)
+  fetchedAt             DateTime @default(now())
+  student               Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, fetchedAt])
+  @@map("performance_snapshots")
+}
+
+model FetchLog {
+  id        String   @id @default(uuid())
+  studentId String
+  platform  String
+  status    String
+  message   String?
+  duration  Int?
+  createdAt DateTime @default(now())
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, createdAt])
+  @@map("fetch_logs")
+}
+
+model AppSettings {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("app_settings")
+}
