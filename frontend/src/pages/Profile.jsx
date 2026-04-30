@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { User, Link as LinkIcon, Save, Info, ExternalLink } from 'lucide-react';
 
 export default function Profile() {
-  const { user, studentId } = useAuth();
+  const { user, studentId, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [studentData, setStudentData] = useState({
@@ -14,10 +14,14 @@ export default function Profile() {
   });
 
   useEffect(() => {
-    if (studentId) {
-      loadProfile();
+    if (!authLoading) {
+      if (studentId) {
+        loadProfile();
+      } else {
+        setLoading(false);
+      }
     }
-  }, [studentId]);
+  }, [studentId, authLoading]);
 
   const loadProfile = async () => {
     try {
@@ -60,6 +64,18 @@ export default function Profile() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  if (!studentId) {
+    return (
+      <div className="p-12 text-center">
+        <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
+          <User size={40} />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900">No Student Profile</h2>
+        <p className="text-slate-500 mt-2">Only student accounts can manage platform links.</p>
       </div>
     );
   }
