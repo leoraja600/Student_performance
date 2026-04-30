@@ -145,8 +145,9 @@ export const updateHackathon = async (req, res, next) => {
     if (hackathon.studentId !== studentId && req.user.role !== 'ADMIN') {
       return res.status(403).json({ success: false, message: 'You can only edit your own entries' });
     }
-    if (hackathon.status === 'VERIFIED' && req.user.role !== 'ADMIN') {
-      return res.status(400).json({ success: false, message: 'Cannot edit a verified entry' });
+    // Prevent students from editing verified entries, but allow Admins/Faculty
+    if (hackathon.status === 'VERIFIED' && req.user.role === 'STUDENT') {
+      return res.status(400).json({ success: false, message: 'Cannot edit a verified entry. Contact faculty/admin.' });
     }
 
     const { eventName, organizer, position, date, description, teamSize } = req.body;
@@ -216,7 +217,8 @@ export const deleteHackathon = async (req, res, next) => {
     if (hackathon.studentId !== studentId && req.user.role !== 'ADMIN') {
       return res.status(403).json({ success: false, message: 'You can only delete your own entries' });
     }
-    if (hackathon.status === 'VERIFIED' && req.user.role !== 'ADMIN') {
+    // Prevent students from deleting verified entries, but allow Admins/Faculty
+    if (hackathon.status === 'VERIFIED' && req.user.role === 'STUDENT') {
       return res.status(400).json({ success: false, message: 'Cannot delete a verified entry. Contact admin.' });
     }
 

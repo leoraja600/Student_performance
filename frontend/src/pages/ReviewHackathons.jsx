@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { hackathonAPI } from '../services/api';
 import { Spinner, EmptyState } from '../components/UI';
+import HackathonFormModal from '../components/HackathonFormModal';
 import toast from 'react-hot-toast';
 
 const STATUS_TABS = [
@@ -24,9 +25,9 @@ export default function ReviewHackathons() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('PENDING');
   const [processing, setProcessing] = useState(null);
-  const [rejectModal, setRejectModal] = useState(null);
-  const [rejectReason, setRejectReason] = useState('');
   const [viewProof, setViewProof] = useState(null);
+  const [editData, setEditData] = useState(null);
+  const [deleting, setDeleting] = useState(null);
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
 
   const fetchData = useCallback(async () => {
@@ -54,6 +55,23 @@ export default function ReviewHackathons() {
       toast.error('Failed to verify');
     } finally {
       setProcessing(null);
+    }
+  };
+
+  const [rejectModal, setRejectModal] = useState(null);
+  const [rejectReason, setRejectReason] = useState('');
+
+  const handleDelete = async (id) => {
+    if (!confirm('Admin: Permanently delete this student submission?')) return;
+    setDeleting(id);
+    try {
+      await hackathonAPI.delete(id);
+      toast.success('Deleted successfully');
+      fetchData();
+    } catch (err) {
+      toast.error('Delete failed');
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -189,6 +207,25 @@ export default function ReviewHackathons() {
                         ❌ REJECTED
                       </span>
                     )}
+
+                    {/* Admin Tools */}
+                    <div className="flex gap-1.5 ml-3 border-l border-slate-100 pl-3">
+                      <button 
+                        onClick={() => setEditData(h)}
+                        className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 flex items-center justify-center transition-colors"
+                        title="Edit entry details"
+                      >
+                        ✏️
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(h.id)}
+                        disabled={deleting === h.id}
+                        className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-red-50 hover:text-red-600 flex items-center justify-center transition-colors"
+                        title="Delete entry"
+                      >
+                        🗑
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -196,6 +233,14 @@ export default function ReviewHackathons() {
           ))}
         </div>
       )}
+
+      {/* Shared Modals */}
+      <HackathonFormModal 
+        isOpen={!!editData}
+        editData={editData}
+        onClose={() => setEditData(null)}
+        onSuccess={fetchData}
+      />
 
       {/* Pagination */}
       {pagination.pages > 1 && (
