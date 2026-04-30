@@ -9,6 +9,7 @@ import {
   getStudentHistory,
   getStudentLogs,
   updateWeeklyGoal,
+  updateProfile,
   getStudentAchievements,
 } from '../controllers/studentController.js';
 import { authenticate, requireAdmin, requireFacultyOrAdmin, requireOwnerOrAdmin, requireStudentOrAdmin } from '../middleware/auth.js';
@@ -107,6 +108,7 @@ router.post('/refresh/:studentId', requireOwnerOrAdmin('studentId'), refreshStud
  *       - bearerAuth: []
  */
 router.put('/:id/goal', requireOwnerOrAdmin('id'), updateWeeklyGoal);
+router.put('/:id/profile', requireOwnerOrAdmin('id'), updateProfile);
 router.get('/:id/history', authenticate, getStudentHistory);
 router.get('/:id/achievements', authenticate, getStudentAchievements);
 

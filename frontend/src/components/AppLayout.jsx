@@ -16,6 +16,7 @@ import ManageStudents from '../pages/ManageStudents';
 import FetchLogs from '../pages/FetchLogs';
 import GlobalAnalytics from '../pages/GlobalAnalytics';
 import HackathonLeaderboard from '../pages/HackathonLeaderboard';
+import Profile from '../pages/Profile';
 
 export default function AppLayout() {
   const { isAdmin, isFaculty, isStudent } = useAuth();
@@ -32,6 +33,7 @@ export default function AppLayout() {
           <Route path="hackathon-leaderboard" element={<HackathonLeaderboard />} />
           <Route path="compare" element={<Compare />} />
           <Route path="hackathons" element={<MyHackathons />} />
+          <Route path="profile" element={<Profile />} />
 
           {isFacultyOrAdmin && (
             <>

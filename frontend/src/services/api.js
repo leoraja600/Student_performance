@@ -51,6 +51,7 @@ export const studentsAPI = {
   history: (id, params) => api.get(`/students/${id}/history`, { params }),
   logs: (id, params) => api.get(`/students/${id}/logs`, { params }),
   updateGoal: (id, goal) => api.put(`/students/${id}/goal`, { goal }),
+  updateProfile: (id, data) => api.put(`/students/${id}/profile`, data),
   achievements: (id) => api.get(`/students/${id}/achievements`),
 };
 

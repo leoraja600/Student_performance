@@ -331,6 +331,55 @@ export const updateWeeklyGoal = async (req, res, next) => {
 };
 
 /**
+ * PUT /api/students/:id/profile - Student: update own profile links
+ */
+export const updateProfile = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { leetcodeUsername, hackerrankUsername } = req.body;
+
+    const student = await prisma.student.findUnique({ where: { id } });
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
+    // Extract usernames if links provided
+    let finalLC = leetcodeUsername;
+    if (finalLC && finalLC.includes('leetcode.com')) {
+      const match = finalLC.match(/leetcode\.com\/(?:u\/)?([^/?#]+)/);
+      if (match) finalLC = match[1];
+    }
+    
+    let finalHR = hackerrankUsername;
+    if (finalHR && finalHR.includes('hackerrank.com')) {
+      const match = finalHR.match(/hackerrank\.com\/(?:profile\/|u\/|profiles\/)?([^/?#\s]+)/i);
+      if (match) finalHR = match[1];
+    }
+
+    const updatedStudent = await prisma.student.update({
+      where: { id },
+      data: {
+        ...(finalLC && { leetcodeUsername: finalLC.trim() }),
+        ...(finalHR && { hackerrankUsername: finalHR.trim() }),
+      },
+    });
+
+    logger.info(`[Students] Student ${id} updated profile links`);
+
+    res.json({ 
+      success: true, 
+      message: 'Profile links updated successfully', 
+      data: {
+        leetcodeUsername: updatedStudent.leetcodeUsername,
+        hackerrankUsername: updatedStudent.hackerrankUsername
+      } 
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * GET /api/students/:id/history - Get historical snapshots for charts
  */
 export const getStudentHistory = async (req, res, next) => {

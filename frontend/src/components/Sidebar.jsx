@@ -47,6 +47,7 @@ export default function Sidebar() {
     // Student portal
     navItems = [
       { to: '/dashboard', label: 'My Dashboard', icon: 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' },
+      { to: '/profile', label: 'My Profile', icon: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z' },
       { to: '/hackathons', label: 'My Hackathons', icon: 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z' },
       { to: '/leaderboard', label: 'Full Leaderboard', icon: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01' },
       { to: '/hackathon-leaderboard', label: 'Event Leaderboard', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
