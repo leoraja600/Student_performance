@@ -37,20 +37,25 @@ export default function AppLayout() {
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile Header */}
-        <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-slate-200 sticky top-0 z-30">
+        <header className="lg:hidden flex flex-col items-center gap-3 px-4 py-4 bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
           <div className="flex items-center gap-3">
-            <img src="/logo.jpg" alt="Logo" className="w-8 h-8 object-contain" />
-            <span className="text-xs font-black text-slate-800 uppercase tracking-tighter">Student Performance</span>
+            <img src="/logo.jpg" alt="Logo" className="w-10 h-10 object-contain" />
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">KARPAGAM</span>
+              <span className="text-[9px] font-bold text-primary-600 uppercase tracking-tighter">College of Engineering</span>
+            </div>
           </div>
+          
           <button 
             onClick={() => setSidebarOpen(true)}
-            className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-slate-50 text-slate-600 hover:bg-slate-100 transition-all border border-slate-100"
           >
-            <svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
               <line x1="3" y1="12" x2="21" y2="12"></line>
               <line x1="3" y1="6" x2="21" y2="6"></line>
               <line x1="3" y1="18" x2="21" y2="18"></line>
             </svg>
+            <span className="text-[10px] font-black uppercase tracking-widest">Open Menu</span>
           </button>
         </header>
 
