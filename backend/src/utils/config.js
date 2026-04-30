@@ -21,9 +21,9 @@ export const config = {
     leetcodeMax: parseInt(process.env.LEETCODE_MAX_SCORE || '23510', 10),
     leetcodeWeight: parseInt(process.env.LEETCODE_WEIGHT || '40', 10),
     hackerrankMax: parseInt(process.env.HACKERRANK_MAX_SCORE || '500', 10),
-    hackerrankWeight: parseInt(process.env.HACKERRANK_WEIGHT || '40', 10),
+    hackerrankWeight: parseInt(process.env.HACKERRANK_WEIGHT || '25', 10),
     hackathonMax: parseInt(process.env.HACKATHON_MAX_SCORE || '10', 10),
-    hackathonWeight: parseInt(process.env.HACKATHON_WEIGHT || '20', 10),
+    hackathonWeight: parseInt(process.env.HACKATHON_WEIGHT || '35', 10),
   },
 
   scraping: {

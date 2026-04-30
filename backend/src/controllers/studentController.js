@@ -152,6 +152,19 @@ export const createStudent = async (req, res, next) => {
       }
     }
 
+    // Extract usernames if links provided
+    let finalLC = leetcodeUsername;
+    if (finalLC && finalLC.includes('leetcode.com')) {
+      const match = finalLC.match(/leetcode\.com\/(?:u\/)?([^/?#]+)/);
+      if (match) finalLC = match[1];
+    }
+    
+    let finalHR = hackerrankUsername;
+    if (finalHR && finalHR.includes('hackerrank.com')) {
+      const match = finalHR.match(/hackerrank\.com\/(?:profile\/|u\/|profiles\/)?([^/?#\s]+)/i);
+      if (match) finalHR = match[1];
+    }
+
     const hashedPassword = await bcrypt.hash(password || rollNumber.toString(), 12);
 
     // Create student and linked user in a transaction
@@ -161,8 +174,8 @@ export const createStudent = async (req, res, next) => {
           rollNumber: rollNumber.toLowerCase().trim(),
           name,
           email: email.toLowerCase().trim(),
-          leetcodeUsername,
-          hackerrankUsername,
+          leetcodeUsername: finalLC,
+          hackerrankUsername: finalHR,
           hackathonCount: parseInt(hackathonCount || 0),
         },
       });
@@ -211,14 +224,27 @@ export const updateStudent = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Student not found' });
     }
 
+    // Extract usernames if links provided
+    let finalLC = leetcodeUsername;
+    if (finalLC && finalLC.includes('leetcode.com')) {
+      const match = finalLC.match(/leetcode\.com\/(?:u\/)?([^/?#]+)/);
+      if (match) finalLC = match[1];
+    }
+    
+    let finalHR = hackerrankUsername;
+    if (finalHR && finalHR.includes('hackerrank.com')) {
+      const match = finalHR.match(/hackerrank\.com\/(?:profile\/|u\/|profiles\/)?([^/?#\s]+)/i);
+      if (match) finalHR = match[1];
+    }
+
     const updatedStudent = await prisma.student.update({
       where: { id },
       data: {
         ...(rollNumber && { rollNumber: rollNumber.toLowerCase().trim() }),
         ...(name && { name }),
         ...(email && { email: email.toLowerCase().trim() }),
-        ...(leetcodeUsername && { leetcodeUsername }),
-        ...(hackerrankUsername && { hackerrankUsername }),
+        ...(finalLC && { leetcodeUsername: finalLC }),
+        ...(finalHR && { hackerrankUsername: finalHR }),
         ...(hackathonCount !== undefined && { hackathonCount: parseInt(hackathonCount) }),
         ...(isActive !== undefined && { isActive }),
       },

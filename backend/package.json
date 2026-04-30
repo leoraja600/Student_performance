@@ -12,7 +12,7 @@
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "seed": "node src/utils/seedUsers.js",
-    "build": "echo 'No build step required for backend'"
+    "build": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^5.10.0",

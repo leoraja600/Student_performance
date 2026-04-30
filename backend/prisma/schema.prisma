@@ -3,16 +3,16 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(uuid())
   email     String   @unique
   password  String
   role      String   @default("STUDENT")
-  studentId String?  @unique @db.ObjectId
+  studentId String?  @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   student   Student? @relation(fields: [studentId], references: [id])
@@ -21,7 +21,7 @@ model User {
 }
 
 model Student {
-  id                 String                @id @default(auto()) @map("_id") @db.ObjectId
+  id                 String                @id @default(uuid())
   rollNumber         String                @unique
   name               String
   email              String                @unique
@@ -42,8 +42,8 @@ model Student {
 }
 
 model Hackathon {
-  id              String    @id @default(auto()) @map("_id") @db.ObjectId
-  studentId       String    @db.ObjectId
+  id              String    @id @default(uuid())
+  studentId       String
   eventName       String
   organizer       String?
   position        String    @default("PARTICIPANT")
@@ -66,8 +66,8 @@ model Hackathon {
 }
 
 model PerformanceSnapshot {
-  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
-  studentId             String   @db.ObjectId
+  id                    String   @id @default(uuid())
+  studentId             String
   leetcodeTotalSolved   Int      @default(0)
   leetcodeEasySolved    Int      @default(0)
   leetcodeMediumSolved  Int      @default(0)
@@ -88,8 +88,8 @@ model PerformanceSnapshot {
 }
 
 model FetchLog {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  studentId String   @db.ObjectId
+  id        String   @id @default(uuid())
+  studentId String
   platform  String
   status    String
   message   String?
@@ -102,7 +102,7 @@ model FetchLog {
 }
 
 model AppSettings {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String   @id @default(uuid())
   key         String   @unique
   value       String
   description String?

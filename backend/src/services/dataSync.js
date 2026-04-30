@@ -83,7 +83,12 @@ export async function fetchAndStoreStudentData(studentId, customWeights = null, 
   let leetcodeData = null, hackerrankData = null, lcError = null, hrError = null;
 
   try {
-    leetcodeData = await fetchLeetcodeStats(student.leetcodeUsername);
+    let lcId = student.leetcodeUsername;
+    if (lcId && lcId.includes('leetcode.com')) {
+      const match = lcId.match(/leetcode\.com\/(?:u\/)?([^/?#]+)/);
+      if (match) lcId = match[1];
+    }
+    leetcodeData = await fetchLeetcodeStats(lcId);
     await prisma.fetchLog.create({
       data: { studentId, platform: 'LEETCODE', status: 'SUCCESS', message: `Solved: ${leetcodeData.totalSolved}`, duration: leetcodeData.duration },
     });
@@ -103,7 +108,13 @@ export async function fetchAndStoreStudentData(studentId, customWeights = null, 
   }
 
   try {
-    hackerrankData = await fetchHackerrankStats(student.hackerrankUsername);
+    let hrId = student.hackerrankUsername;
+    const hrMatch = hrId.match(/hackerrank\.com\/(?:profile\/|u\/|profiles\/)?([^/?#\s]+)/i);
+    if (hrMatch) {
+      hrId = hrMatch[1];
+      logger.info(`[DataSync] Extracted HackerRank username "${hrId}" from link for student ${student.name}`);
+    }
+    hackerrankData = await fetchHackerrankStats(hrId);
     await prisma.fetchLog.create({
       data: { studentId, platform: 'HACKERRANK', status: hackerrankData.fromCache ? 'SKIPPED' : 'SUCCESS', message: `Solved: ${hackerrankData.totalSolved}`, duration: hackerrankData.duration },
     });

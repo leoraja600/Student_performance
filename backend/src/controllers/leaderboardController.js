@@ -39,26 +39,24 @@ export const getLeaderboard = async (req, res, next) => {
       },
     });
 
-    // Build the mapped leaderboard
-    let leaderboard = students
-      .filter((s) => s.snapshots.length > 0)
-      .map((student) => {
-        const latest = student.snapshots[0];
-        return {
-          studentId: student.id,
-          rollNumber: student.rollNumber,
-          name: student.name || student.email.split('@')[0],
-          leetcodeUsername: student.leetcodeUsername,
-          hackerrankUsername: student.hackerrankUsername,
-          leetcodeTotalSolved: latest.leetcodeTotalSolved,
-          leetcodeContestRating: latest.leetcodeContestRating || 0,
-          hackerrankTotalSolved: latest.hackerrankTotalSolved,
-          hackathonScore: latest.hackathonScore || 0,
-          hackathonCount: student.hackathonCount || 0,
-          combinedScore: latest.combinedScore,
-          lastUpdated: latest.fetchedAt,
-        };
-      });
+    // Build the mapped leaderboard for ALL students
+    let leaderboard = students.map((student) => {
+      const latest = student.snapshots[0] || {};
+      return {
+        studentId: student.id,
+        rollNumber: student.rollNumber,
+        name: student.name || student.email.split('@')[0],
+        leetcodeUsername: student.leetcodeUsername,
+        hackerrankUsername: student.hackerrankUsername,
+        leetcodeTotalSolved: latest.leetcodeTotalSolved || 0,
+        leetcodeContestRating: latest.leetcodeContestRating || 0,
+        hackerrankTotalSolved: latest.hackerrankTotalSolved || 0,
+        hackathonScore: latest.hackathonScore || 0,
+        hackathonCount: student.hackathonCount || 0,
+        combinedScore: latest.combinedScore || 0,
+        lastUpdated: latest.fetchedAt || null,
+      };
+    });
 
     // Robust numerical sorting
     leaderboard.sort((a, b) => {

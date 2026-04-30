@@ -24,9 +24,17 @@ async function importStudents(csvPath) {
     const content = fs.readFileSync(csvPath, 'utf8');
     const lines = content.split(/\r?\n/).filter(line => line.trim());
     
-    // Header: S.NO,NAME,ROLL NO,ROLL NO,MAIL ID,DEP,LEET CODE LINK,BATCH
-    const studentsData = lines.slice(1);
+    // Detect columns from header
+    const header = lines[0].split(',').map(h => h.trim().toUpperCase());
+    const rollIdx = header.findIndex(h => h.includes('ROLL') || h.includes('REGISTER'));
+    const nameIdx = header.findIndex(h => h.includes('NAME'));
+    const mailIdx = header.findIndex(h => h.includes('MAIL') || h.includes('EMAIL'));
+    const lcIdx = header.findIndex(h => h.includes('LEET CODE') || h.includes('LEETCODE'));
+    const hrIdx = header.findIndex(h => h.includes('HACKER RANK') || h.includes('HACKERRANK'));
 
+    logger.info(`Detected mapping: Roll=${rollIdx}, Name=${nameIdx}, Mail=${mailIdx}, LC=${lcIdx}, HR=${hrIdx}`);
+
+    const studentsData = lines.slice(1);
     logger.info(`Found ${studentsData.length} students to import...`);
 
     let successCount = 0;
@@ -34,29 +42,34 @@ async function importStudents(csvPath) {
 
     for (const line of studentsData) {
       const values = line.split(',').map(v => v.trim());
-      if (values.length < 5) continue;
+      if (values.length < 2) continue;
 
-      const name = values[1];
-      const rollNumber = values[2];
-      const email = values[4] || `${rollNumber.toLowerCase()}@kce.ac.in`;
-      const lcLink = values[6] || '';
+      const rollNumber = rollIdx !== -1 ? values[rollIdx] : '';
+      const name = nameIdx !== -1 ? values[nameIdx] : rollNumber;
+      const email = mailIdx !== -1 ? values[mailIdx] : `${rollNumber.toLowerCase()}@kce.ac.in`;
+      const lcLink = lcIdx !== -1 ? values[lcIdx] : '';
+      const hrLink = hrIdx !== -1 ? values[hrIdx] : '';
 
-      if (!rollNumber) continue;
+      if (!rollNumber || rollNumber.toUpperCase() === 'ROLL NO') continue;
 
-      // Extract username from link
+      // Extract LeetCode username
       let leetcodeUsername = null;
       const lcMatch = lcLink.match(/leetcode\.com\/(?:u\/)?([^/?#]+)/);
-      
       const blacklist = ['problemset', 'profile', 'explore', 'onboarding', 'accounts', 'confirm-email', 'u', 'account'];
-      
       if (lcMatch && !blacklist.includes(lcMatch[1].toLowerCase())) {
         leetcodeUsername = lcMatch[1];
       } else {
         leetcodeUsername = `lc_${rollNumber.toLowerCase()}`;
       }
 
-      // Default HackerRank
-      let hackerrankUsername = `hr_${rollNumber.toLowerCase()}`;
+      // Extract HackerRank username from link if provided
+      let hackerrankUsername = null;
+      const hrMatch = hrLink.match(/hackerrank\.com\/(?:profile\/|u\/|profiles\/)?([^/?#\s]+)/i);
+      if (hrMatch) {
+         hackerrankUsername = hrMatch[1];
+      } else {
+         hackerrankUsername = `hr_${rollNumber.toLowerCase()}`;
+      }
 
       try {
         const existingStudent = await prisma.student.findUnique({
