@@ -40,4 +40,10 @@ export const config = {
     level: process.env.LOG_LEVEL || 'info',
     dir: process.env.LOG_DIR || 'logs',
   },
+
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    apiSecret: process.env.CLOUDINARY_API_SECRET,
+  },
 };

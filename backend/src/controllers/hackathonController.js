@@ -1,17 +1,14 @@
 import prisma from '../utils/prisma.js';
 import { logger } from '../utils/logger.js';
-import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
+import { v2 as cloudinary } from 'cloudinary';
+import { config } from '../utils/config.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const UPLOADS_DIR = path.join(__dirname, '..', '..', 'uploads', 'hackathons');
-
-// Ensure uploads directory exists
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-}
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: config.cloudinary.cloudName,
+  api_key: config.cloudinary.apiKey,
+  api_secret: config.cloudinary.apiSecret,
+});
 
 // Points awarded based on position
 const POSITION_SCORES = {
@@ -55,11 +52,18 @@ export const createHackathon = async (req, res, next) => {
         return res.status(400).json({ success: false, message: 'Proof file must be under 5MB' });
       }
 
-      const ext = path.extname(file.name);
-      const filename = `${studentId}_${Date.now()}${ext}`;
-      const filepath = path.join(UPLOADS_DIR, filename);
-      await file.mv(filepath);
-      proofUrl = `/uploads/hackathons/${filename}`;
+      // Upload to Cloudinary
+      const uploadResult = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          { folder: 'hackathons' },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        uploadStream.end(file.data);
+      });
+      proofUrl = uploadResult.secure_url;
     }
 
     const hackathon = await prisma.hackathon.create({
@@ -159,17 +163,18 @@ export const updateHackathon = async (req, res, next) => {
         return res.status(400).json({ success: false, message: 'Proof file must be under 5MB' });
       }
 
-      // Delete old file if exists
-      if (hackathon.proofUrl) {
-        const oldPath = path.join(__dirname, '..', '..', hackathon.proofUrl);
-        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-      }
-
-      const ext = path.extname(file.name);
-      const filename = `${studentId}_${Date.now()}${ext}`;
-      const filepath = path.join(UPLOADS_DIR, filename);
-      await file.mv(filepath);
-      proofUrl = `/uploads/hackathons/${filename}`;
+      // Upload to Cloudinary
+      const uploadResult = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          { folder: 'hackathons' },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        uploadStream.end(file.data);
+      });
+      proofUrl = uploadResult.secure_url;
     }
 
     const validPositions = Object.keys(POSITION_SCORES);
@@ -215,11 +220,8 @@ export const deleteHackathon = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Cannot delete a verified entry. Contact admin.' });
     }
 
-    // Delete proof file
-    if (hackathon.proofUrl) {
-      const filePath = path.join(__dirname, '..', '..', hackathon.proofUrl);
-      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-    }
+    // Note: Cloudinary deletion can be added here if needed, 
+    // but usually keeping proofs is safer.
 
     await prisma.hackathon.delete({ where: { id } });
 
