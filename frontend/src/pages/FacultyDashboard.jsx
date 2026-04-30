@@ -189,15 +189,6 @@ export default function FacultyDashboard() {
            </div>
         </div>
 
-        {/* Peer Trajectory Comparison (Concept) */}
-        <div className="card p-6 flex flex-col justify-center items-center text-center space-y-4 bg-white">
-           <div className="w-16 h-16 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center text-2xl shadow-inner">⚖️</div>
-           <div>
-             <h3 className="text-sm font-bold text-slate-900">Side-by-Side Trajectory View</h3>
-             <p className="text-[10px] text-slate-500 mt-2 max-w-xs font-medium">Select any two students to compare their learning velocity and patterns. Useful for identifying peer-learning pairs.</p>
-           </div>
-           <button className="btn-secondary text-[9px] uppercase font-black tracking-widest px-8 py-2.5">Open Comparison Tool</button>
-        </div>
       </div>
     </div>
   );

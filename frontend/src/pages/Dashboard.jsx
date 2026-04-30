@@ -161,11 +161,11 @@ function PlacementReadiness({ latest }) {
     color = 'text-blue-600';
     bg = 'bg-blue-50';
     border = 'border-blue-100';
-  } else if (score > 45) {
-    status = 'POTENTIAL';
-    color = 'text-orange-600';
-    bg = 'bg-orange-50';
-    border = 'border-orange-100';
+  } else if (score > 50) {
+    status = 'JOB READY';
+    color = 'text-indigo-600';
+    bg = 'bg-indigo-50';
+    border = 'border-indigo-100';
   }
 
   return (
@@ -257,7 +257,7 @@ export default function Dashboard() {
   return (
     <div className="p-6 space-y-6 animate-fade-in relative">
       {/* Job Ready Badge Floating */}
-      {latest?.combinedScore > 75 && (
+      {latest?.combinedScore > 50 && (
         <div className="absolute top-6 right-6 z-10 animate-bounce">
           <div className="bg-yellow-500 text-black text-[10px] font-black px-3 py-1 rounded-full shadow-lg border-2 border-white flex items-center gap-1">
              <span>💼</span> JOB READY
