@@ -9,7 +9,7 @@ const Icon = ({ d, size = 20 }) => (
   </svg>
 );
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }) {
   const { user, logout, isAdmin, isFaculty, isStudent } = useAuth();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
@@ -57,9 +57,9 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`flex flex-col h-screen bg-white border-r border-slate-200 transition-all duration-300 shadow-sm ${
-        collapsed ? 'w-16' : 'w-64'
-      }`}
+      className={`fixed inset-y-0 left-0 z-50 flex flex-col h-screen bg-white border-r border-slate-200 transition-all duration-300 shadow-xl lg:shadow-sm lg:static ${
+        collapsed ? 'lg:w-16' : 'lg:w-64'
+      } ${isOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0'}`}
     >
       {/* Logo */}
       <div className="flex items-center gap-3 p-4 border-b border-slate-100">
@@ -74,10 +74,19 @@ export default function Sidebar() {
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="ml-auto text-gray-500 hover:text-gray-300 transition-colors"
+          className="ml-auto text-gray-400 hover:text-primary-600 transition-colors hidden lg:block"
         >
           <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
             <path d={collapsed ? 'M9 18l6-6-6-6' : 'M15 18l-6-6 6-6'} />
+          </svg>
+        </button>
+        {/* Mobile Close Button */}
+        <button
+          onClick={onClose}
+          className="ml-auto text-gray-400 hover:text-red-600 transition-colors lg:hidden"
+        >
+          <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 6L6 18M6 6l12 12" />
           </svg>
         </button>
       </div>
@@ -114,6 +123,7 @@ export default function Sidebar() {
               }`
             }
             title={collapsed ? item.label : undefined}
+            onClick={() => { if (window.innerWidth < 1024) onClose(); }}
           >
             <Icon d={item.icon} size={18} />
             {!collapsed && <span>{item.label}</span>}
