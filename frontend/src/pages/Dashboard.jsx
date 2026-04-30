@@ -141,43 +141,6 @@ function GhostModeChart({ benchmarks }) {
   );
 }
 
-function SkillGapInsights({ latest }) {
-  if (!latest) return null;
-  const insights = [];
-  let topics = [];
-  try { topics = latest.topTopics ? JSON.parse(latest.topTopics) : []; } catch { topics = []; }
-  
-  const topicNames = topics.map(t => t.name.toLowerCase());
-  const resourceMap = {
-    'Dynamic Programming': 'https://www.geeksforgeeks.org/dynamic-programming/',
-    'Graph': 'https://www.youtube.com/results?search_query=graph+algorithms+tutorial',
-    'Tree': 'https://leetcode.com/explore/learn/card/data-structure-tree/',
-    'Sort': 'https://www.programiz.com/dsa/sorting-algorithm',
-    'Greedy': 'https://www.hackerearth.com/practice/algorithms/greedy/basics-of-greedy-algorithms/tutorial/'
-  };
-
-  if (latest.leetcodeTotalSolved > 20) {
-    ['Dynamic Programming', 'Graph', 'Tree', 'Sort', 'Greedy'].forEach(t => {
-      if (!topicNames.includes(t.toLowerCase())) {
-        insights.push({ text: `Boost your ${t} skills`, link: resourceMap[t] });
-      }
-    });
-  }
-
-  return (
-    <div className="card p-5 space-y-4">
-      <h2 className="text-sm font-bold text-slate-900 mb-2 font-mono">Pedagogical Recommendations</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {insights.slice(0, 4).map((insight, i) => (
-          <a key={i} href={insight.link} target="_blank" rel="noopener noreferrer" className="p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors border border-slate-100 flex justify-between items-center group">
-            <span className="text-xs text-slate-600 group-hover:text-primary-600">{insight.text}</span>
-            <span className="text-lg">📚</span>
-          </a>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 function PlacementReadiness({ latest }) {
   if (!latest) return null;
@@ -225,52 +188,6 @@ function PlacementReadiness({ latest }) {
   );
 }
 
-function WeeklyGoalTracker({ student, latest, achievements }) {
-  const [goal, setGoal] = useState(student?.weeklyGoal || 10);
-  const [updating, setUpdating] = useState(false);
-  const solvedThisWeek = achievements?.weeklyLeetcodeProgress || student?.weeklyLeetcodeProgress || 0;
-  const progress = Math.min((solvedThisWeek / goal) * 100, 100);
-
-  const updateGoal = async () => {
-    setUpdating(true);
-    try {
-      await studentsAPI.updateGoal(student.id, goal);
-      toast.success('Goal updated!');
-    } catch { toast.error('Failed to update'); }
-    finally { setUpdating(false); }
-  };
-
-  return (
-    <div className="card p-6 border-l-4 border-accent-500 bg-white shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          <h2 className="text-sm font-bold text-slate-900">Weekly Goal</h2>
-          <p className="text-[10px] text-slate-400 font-medium">LeetCode solved in last 7 days</p>
-        </div>
-        <div className="flex gap-2">
-          <input type="number" value={goal} onChange={(e) => setGoal(e.target.value)} className="w-14 bg-slate-50 border border-slate-200 rounded text-xs text-slate-900 p-1 font-bold focus:ring-2 focus:ring-accent-500 outline-none" />
-          <button onClick={updateGoal} className="text-xs text-accent-600 font-black hover:text-accent-700 transition-colors uppercase tracking-tighter">SET</button>
-        </div>
-      </div>
-      <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden shadow-inner mt-4">
-        <div 
-          className="h-full bg-gradient-to-right from-accent-400 to-accent-600 transition-all duration-1000 relative" 
-          style={{ width: `${progress}%` }}
-        >
-          {progress > 10 && (
-            <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
-          )}
-        </div>
-      </div>
-      <div className="flex justify-between items-center mt-3">
-        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">Progress: {solvedThisWeek} / {goal} solved</p>
-        <span className="text-[10px] font-black text-accent-600 bg-accent-50 px-2 py-0.5 rounded-lg border border-accent-100">
-          {Math.round(progress)}%
-        </span>
-      </div>
-    </div>
-  );
-}
 
 export default function Dashboard() {
   const { user, isAdmin, isFaculty } = useAuth();
@@ -425,7 +342,6 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
              <div className="space-y-6 lg:col-span-1">
                <PlacementReadiness latest={latest} />
-               <WeeklyGoalTracker student={student} latest={latest} achievements={achievements} />
                <div className="card p-6 h-full bg-white relative group overflow-hidden">
                  <div className="relative z-10">
                     <SkillRadarChart latest={latest} />
@@ -447,7 +363,6 @@ export default function Dashboard() {
                      </button>
                   </div>
                 </div>
-                <SkillGapInsights latest={latest} />
              </div>
           </div>
 
