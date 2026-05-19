@@ -17,9 +17,9 @@ export const getStudents = async (req, res, next) => {
       isActive: true,
       ...(search && {
         OR: [
-          { name: { contains: search } },
-          { rollNumber: { contains: search } },
-          { email: { contains: search } },
+          { name: { contains: search, mode: 'insensitive' } },
+          { rollNumber: { contains: search, mode: 'insensitive' } },
+          { email: { contains: search, mode: 'insensitive' } },
         ],
       }),
     };

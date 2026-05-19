@@ -15,8 +15,8 @@ export const getLeaderboard = async (req, res, next) => {
       isActive: true,
       ...(search && {
         OR: [
-          { name: { contains: search } },
-          { rollNumber: { contains: search } },
+          { name: { contains: search, mode: 'insensitive' } },
+          { rollNumber: { contains: search, mode: 'insensitive' } },
         ],
       }),
       ...(onlyHackathons === 'true' && {
