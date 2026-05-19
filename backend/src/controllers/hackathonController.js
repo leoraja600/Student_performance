@@ -142,7 +142,7 @@ export const updateHackathon = async (req, res, next) => {
     if (!hackathon) {
       return res.status(404).json({ success: false, message: 'Hackathon not found' });
     }
-    if (hackathon.studentId !== studentId && req.user.role !== 'ADMIN') {
+    if (hackathon.studentId !== studentId && req.user.role !== 'ADMIN' && req.user.role !== 'FACULTY') {
       return res.status(403).json({ success: false, message: 'You can only edit your own entries' });
     }
     // Prevent students from editing verified entries, but allow Admins/Faculty
@@ -214,7 +214,7 @@ export const deleteHackathon = async (req, res, next) => {
     if (!hackathon) {
       return res.status(404).json({ success: false, message: 'Hackathon not found' });
     }
-    if (hackathon.studentId !== studentId && req.user.role !== 'ADMIN') {
+    if (hackathon.studentId !== studentId && req.user.role !== 'ADMIN' && req.user.role !== 'FACULTY') {
       return res.status(403).json({ success: false, message: 'You can only delete your own entries' });
     }
     // Prevent students from deleting verified entries, but allow Admins/Faculty

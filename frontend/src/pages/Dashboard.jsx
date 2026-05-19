@@ -189,6 +189,48 @@ function PlacementReadiness({ latest }) {
 }
 
 
+const STATUS_STYLES = {
+  PENDING: 'bg-amber-50 text-amber-700 border-amber-200',
+  VERIFIED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  REJECTED: 'bg-red-50 text-red-700 border-red-200',
+};
+
+const STATUS_ICONS = {
+  PENDING: '⏳',
+  VERIFIED: '✅',
+  REJECTED: '❌',
+};
+
+const POSITION_OPTIONS = [
+  { value: 'WINNER', label: '🥇 Winner', points: 10 },
+  { value: 'RUNNER_UP', label: '🥈 Runner Up', points: 7 },
+  { value: 'TOP_5', label: '🏅 Top 5', points: 5 },
+  { value: 'PARTICIPANT', label: '👤 Participant', points: 3 },
+];
+
+function ProofViewer({ url, onClose }) {
+  if (!url) return null;
+  const isPdf = url.endsWith('.pdf');
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl max-w-3xl max-h-[85vh] w-full mx-4 overflow-hidden" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-6 py-3 border-b border-slate-100">
+          <h3 className="text-sm font-bold text-slate-700">Proof Document</h3>
+          <button onClick={onClose} className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500">&times;</button>
+        </div>
+        <div className="p-4 flex items-center justify-center bg-slate-50 min-h-[400px]">
+          {isPdf ? (
+            <iframe src={url} className="w-full h-[70vh] rounded-lg" title="Proof PDF" />
+          ) : (
+            <img src={url} alt="Proof" className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-sm" />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const { user, isAdmin, isFaculty } = useAuth();
   const { id } = useParams();
@@ -196,6 +238,8 @@ export default function Dashboard() {
   const [history, setHistory] = useState([]);
   const [achievements, setAchievements] = useState(null);
   const [hackathonStats, setHackathonStats] = useState(null);
+  const [hackathonsList, setHackathonsList] = useState([]);
+  const [viewProof, setViewProof] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -216,11 +260,22 @@ export default function Dashboard() {
       if (hRes.status === 'fulfilled') setHistory(hRes.value.data.data || []);
       if (aRes.status === 'fulfilled') setAchievements(aRes.value.data.data);
       
-      // Only fetch personal hackathon stats if viewing own dashboard
+      // Fetch hackathon stats and list
       if (!id || id === user?.studentId) {
         try {
           const hkRes = await hackathonAPI.getMyHackathons();
-          if (hkRes?.data?.data?.stats) setHackathonStats(hkRes.data.data.stats);
+          if (hkRes?.data?.data) {
+            setHackathonStats(hkRes.data.data.stats);
+            setHackathonsList(hkRes.data.data.hackathons || []);
+          }
+        } catch (e) { console.warn("Hackathon fetch failed", e); }
+      } else if (isAdmin || isFaculty) {
+        try {
+          const hkRes = await hackathonAPI.getStudentHackathons(studentId);
+          if (hkRes?.data?.data) {
+            setHackathonStats(hkRes.data.data.stats);
+            setHackathonsList(hkRes.data.data.hackathons || []);
+          }
         } catch (e) { console.warn("Hackathon fetch failed", e); }
       }
     } catch (err) {
@@ -231,7 +286,18 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }, [studentId, id, user?.studentId]);
+  }, [studentId, id, user?.studentId, isAdmin, isFaculty]);
+
+  const handleDeleteHackathon = async (hackathonId) => {
+    if (!confirm('Are you sure you want to permanently delete this hackathon submission?')) return;
+    try {
+      await hackathonAPI.delete(hackathonId);
+      toast.success('Hackathon submission deleted successfully');
+      await fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete hackathon');
+    }
+  };
 
   useEffect(() => {
     if (studentId) fetchData();
@@ -318,7 +384,7 @@ export default function Dashboard() {
 
           {/* Hackathon Quick Summary */}
           {hackathonStats && (
-            <div className="card p-5 border-l-4 border-violet-500 bg-gradient-to-r from-violet-50/50 to-white">
+            <div className="card p-5 border-l-4 border-violet-500 bg-gradient-to-r from-violet-50/50 to-white shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">🏆</span>
@@ -329,12 +395,21 @@ export default function Dashboard() {
                     </p>
                   </div>
                 </div>
-                <Link
-                  to="/hackathons"
-                  className="px-4 py-2 bg-violet-600 text-white text-xs font-bold rounded-xl hover:bg-violet-700 transition-colors shadow-sm flex items-center gap-1.5"
-                >
-                  <span>+</span> Add / View All
-                </Link>
+                {(!id || id === user?.studentId) ? (
+                  <Link
+                    to="/hackathons"
+                    className="px-4 py-2 bg-violet-600 text-white text-xs font-bold rounded-xl hover:bg-violet-700 transition-colors shadow-sm flex items-center gap-1.5"
+                  >
+                    <span>+</span> Add / View All
+                  </Link>
+                ) : (isAdmin || isFaculty) ? (
+                  <Link
+                    to="/admin/hackathons"
+                    className="px-4 py-2 bg-violet-600 text-white text-xs font-bold rounded-xl hover:bg-violet-700 transition-colors shadow-sm flex items-center gap-1.5"
+                  >
+                    Review All Submissions
+                  </Link>
+                ) : null}
               </div>
             </div>
           )}
@@ -380,10 +455,93 @@ export default function Dashboard() {
              </div>
              <HistoryChart history={history} />
           </div>
+
+          {/* Detailed Hackathons list for students details registration */}
+          {hackathonsList.length > 0 && (
+            <div className="card p-6 bg-white border border-slate-100 shadow-sm space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                    🏆 Hackathon Registration & Submissions
+                  </h2>
+                  <p className="text-[10px] text-slate-400">Detailed overview of participations and awards for this student</p>
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-slate-100 bg-slate-50/50">
+                      <th className="table-header text-left">Event Details</th>
+                      <th className="table-header text-left">Organizer</th>
+                      <th className="table-header text-left">Position</th>
+                      <th className="table-header text-left">Date</th>
+                      <th className="table-header text-left">Status</th>
+                      <th className="table-header text-left">Points</th>
+                      <th className="table-header text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {hackathonsList.map((h) => {
+                      const posInfo = POSITION_OPTIONS.find(p => p.value === h.position) || { label: h.position, points: 3 };
+                      const canDelete = isAdmin || isFaculty || (h.status !== 'VERIFIED' && (!id || id === user?.studentId));
+                      return (
+                        <tr key={h.id} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="table-cell">
+                            <div>
+                              <p className="font-bold text-slate-900">{h.eventName}</p>
+                              {h.description && <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">{h.description}</p>}
+                            </div>
+                          </td>
+                          <td className="table-cell text-xs text-slate-500 font-medium">{h.organizer || '—'}</td>
+                          <td className="table-cell text-xs font-semibold text-slate-700">{posInfo.label}</td>
+                          <td className="table-cell text-xs text-slate-500 font-mono">
+                            {new Date(h.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </td>
+                          <td className="table-cell">
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black border ${STATUS_STYLES[h.status]}`}>
+                              {STATUS_ICONS[h.status]} {h.status}
+                            </span>
+                          </td>
+                          <td className="table-cell">
+                            <span className={`text-xs font-bold ${h.status === 'VERIFIED' ? 'text-emerald-600' : 'text-slate-400'}`}>
+                              {h.status === 'VERIFIED' ? `+${posInfo.points} pts` : '—'}
+                            </span>
+                          </td>
+                          <td className="table-cell text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              {h.proofUrl && (
+                                <button
+                                  onClick={() => setViewProof(h.proofUrl)}
+                                  className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors"
+                                  title="View Proof"
+                                >
+                                  👁
+                                </button>
+                              )}
+                              {canDelete && (
+                                <button
+                                  onClick={() => handleDeleteHackathon(h.id)}
+                                  className="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-100 flex items-center justify-center text-red-500 transition-colors"
+                                  title="Delete Registration"
+                                >
+                                  🗑
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </>
       ) : (
         <EmptyState message="Sync your profiles to see data." />
       )}
+      {viewProof && <ProofViewer url={viewProof} onClose={() => setViewProof(null)} />}
     </div>
   );
 }
