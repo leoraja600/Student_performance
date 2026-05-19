@@ -24,7 +24,7 @@
 | Layer | Technology |
 |-------|-----------|
 | Backend | Node.js + Express (ES modules) |
-| Database | SQLite + Prisma ORM (No setup required) |
+| Database | PostgreSQL + Prisma ORM |
 | Frontend | React (Vite) + Tailwind CSS + Chart.js |
 | Scraping | Playwright (HackerRank) + Axios/GraphQL (LeetCode) |
 | Auth | JWT (jsonwebtoken + bcryptjs) |
@@ -197,6 +197,61 @@ st_project/
 ├── docker-compose.yml
 └── README.md
 ```
+
+---
+
+## 🚀 Deployment Guide
+
+### Option 1: Docker Compose (Self-Hosted / VPS)
+This is the easiest way to deploy the entire stack (Frontend, Backend, and PostgreSQL) together.
+
+1. Ensure Docker and Docker Compose are installed on your host machine.
+2. Configure your environment variables in a root `.env` file (see the [Environment Variables](#⚙️-environment-variables) section).
+3. Build and launch the containers in detached mode:
+   ```bash
+   docker-compose up --build -d
+   ```
+4. Access the frontend on port `80` (or `http://localhost`) and the backend API on port `5000`.
+
+---
+
+### Option 2: Cloud Deployment (e.g., Render / Railway)
+
+You can deploy the backend, frontend, and database as separate services on a cloud platform like Render:
+
+#### 1. Database (PostgreSQL)
+- Spin up a **Render PostgreSQL** database instance.
+- Note the **Internal Database URL** (for services running on Render) and **External Database URL** (for local/external migration access).
+
+#### 2. Backend (Web Service)
+- Create a new **Web Service** on Render and connect it to your backend repository directory (`/backend`).
+- **Environment**: `Node`
+- **Build Command**: 
+  ```bash
+  npm install && npx prisma generate
+  ```
+- **Start Command**: 
+  ```bash
+  npx prisma migrate deploy && node src/utils/seedSettings.js && node src/utils/seedAdmin.js && node src/server.js
+  ```
+- **Environment Variables**:
+  - `DATABASE_URL`: Your PostgreSQL connection string.
+  - `JWT_SECRET`: A secure 32+ character random string.
+  - `PORT`: `5000` (or let Render assign one automatically).
+  - `NODE_ENV`: `production`
+  - `ADMIN_EMAIL`: Default admin account email.
+  - `ADMIN_PASSWORD`: Default admin account password.
+  - Set other formula and scraping variables as described in the [Environment Variables](#⚙️-environment-variables) section.
+
+#### 3. Frontend (Static Site)
+- Create a new **Static Site** on Render and connect it to your frontend repository directory (`/frontend`).
+- **Build Command**: 
+  ```bash
+  npm run build
+  ```
+- **Publish Directory**: `dist`
+- **Environment Variables**:
+  - `VITE_API_URL`: Set this to your backend service's public URL (e.g., `https://student-performance-api.onrender.com`).
 
 ---
 

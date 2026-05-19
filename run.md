@@ -4,7 +4,7 @@ Follow these steps to set up and run the environment locally.
 
 ## 🛠 Prerequisites
 - **Node.js**: >= 18.x
-- **SQLite**: (No setup needed as Prisma handles the `.db` file locally)
+- **PostgreSQL**: Make sure you have a running PostgreSQL database instance.
 
 ---
 
